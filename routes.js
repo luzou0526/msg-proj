@@ -1,7 +1,8 @@
 'use strict';
 
 const healthCheck = require('./lib/healthCheck'),
-      postMessage = require('./lib/postMessage').hapiConfig;
+      postMessage = require('./lib/postMessage'),
+      getMessage = require('./lib/getMessageByName');
 
 module.exports = [
     {
@@ -15,5 +16,10 @@ module.exports = [
         method: 'POST',
         path: '/postMessage',
         config: postMessage
+    },
+    {
+        method: 'GET',
+        path: '/getMessageByName',
+        config: getMessage
     }
 ];
