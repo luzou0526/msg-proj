@@ -1,0 +1,567 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: msg-proj
+
+Parameters:
+  AppName:
+    Description: AppName
+    Default: msg-proj-prod
+    Type: String
+  EnvType:
+    Description: Environment
+    Default: prod
+    Type: String
+    AllowedValues:
+    - prod
+    - qa
+    - dev
+  ContainerName:
+    Description: container name
+    Default: msg-proj-prod
+    Type: String
+
+Mappings:
+  Configuration:
+    # In real prods, the config of dev/qa/prod should be different
+    # For this project (hmm..costs $$$..), use the same configs. Dev/Qa are more like placeholders
+    prod:
+      SubnetGroups:
+      - subnet-5f9bc305
+      - subnet-d9c21fbd
+      - subnet-b1cbec9d
+      VPCId: vpc-12cbce6b
+      MandatoryTags:
+      - Key: owner
+        Value: Lu Zou
+      - Key: Name
+        Value: MsgProj
+      - Key: Environment
+        Value: prod
+      MinSize: 1
+      MaxSize: 2
+      ImageId: ami-9eb4b1e5
+      KeyPairName: lu.play
+      InstanceType: t2.micro
+      DockerImage: 918544260695.dkr.ecr.us-east-1.amazonaws.com/msg.proj:latest
+      HostedZoneId: ZIU9HOGZHR4WQ
+      DesiredInstanceCapacity: 1
+      DesiredTaskCount: 1
+      TaskCpu: 1024
+      TaskMemory: 900
+      MaxTaskCount: 2
+      MinTaskCount: 1
+      Tags:
+      - Key: owner
+        Value: Lu Zou
+        # Copy tag to EC2
+        PropagateAtLaunch: true
+      - Key: Name
+        Value: MsgProj
+        PropagateAtLaunch: true
+      - Key: Environment
+        Value: prod
+        PropagateAtLaunch: true
+    qa:
+      SubnetGroups:
+      - subnet-5f9bc305
+      - subnet-d9c21fbd
+      - subnet-b1cbec9d
+      VPCId: vpc-12cbce6b
+      MandatoryTags:
+      - Key: owner
+        Value: Lu Zou
+      - Key: Name
+        Value: MsgProj
+      - Key: Environment
+        Value: prod
+      MinSize: 1
+      MaxSize: 2
+      ImageId: ami-9eb4b1e5
+      KeyPairName: lu.play
+      InstanceType: t2.micro
+      DockerImage: 918544260695.dkr.ecr.us-east-1.amazonaws.com/msg.proj:latest
+      HostedZoneId: ZIU9HOGZHR4WQ
+      DesiredInstanceCapacity: 1
+      DesiredTaskCount: 1
+      TaskCpu: 1024
+      TaskMemory: 900
+      MaxTaskCount: 2
+      MinTaskCount: 1
+      Tags:
+      - Key: owner
+        Value: Lu Zou
+        PropagateAtLaunch: true
+      - Key: Name
+        Value: MsgProj
+        PropagateAtLaunch: true
+      - Key: Environment
+        Value: qa
+        PropagateAtLaunch: true
+    dev:
+      SubnetGroups:
+      - subnet-5f9bc305
+      - subnet-d9c21fbd
+      - subnet-b1cbec9d
+      VPCId: vpc-12cbce6b
+      MandatoryTags:
+      - Key: owner
+        Value: Lu Zou
+      - Key: Name
+        Value: MsgProj
+      - Key: Environment
+        Value: prod
+      MinSize: 1
+      MaxSize: 2
+      ImageId: ami-9eb4b1e5
+      KeyPairName: lu.play
+      InstanceType: t2.micro
+      DockerImage: 918544260695.dkr.ecr.us-east-1.amazonaws.com/msg.proj:latest
+      HostedZoneId: ZIU9HOGZHR4WQ
+      DesiredInstanceCapacity: 1
+      DesiredTaskCount: 1
+      TaskCpu: 1024
+      TaskMemory: 900
+      MaxTaskCount: 2
+      MinTaskCount: 1
+      Tags:
+      - Key: owner
+        Value: Lu Zou
+        PropagateAtLaunch: true
+      - Key: Name
+        Value: MsgProj
+        PropagateAtLaunch: true
+      - Key: Environment
+        Value: dev
+        PropagateAtLaunch: true
+
+  EnvironmentVariables:
+    prod:
+      NodeEnv: prod
+    qa:
+      NodeEnv: qa
+    dev:
+      NodeEnv: dev
+
+Resources:
+  # The ECS Cluster
+  MsgCluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: MsgProj
+
+  # Log group, since I don't have monitoring tool lisenced
+  # Use log group for monitoring on some level
+  CloudwatchLogsGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Join ['-', [ECSLogGroup, !Ref 'AWS::StackName']]
+      RetentionInDays: 7
+
+  # The ECS task
+  MsgTask:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Ref AppName
+      ContainerDefinitions:
+      - Name: !Ref ContainerName
+        Cpu: !FindInMap [Configuration, !Ref EnvType, TaskCpu]
+        Essential: 'true'
+        Image: !FindInMap [Configuration, !Ref EnvType, DockerImage]
+        Memory: !FindInMap [Configuration, !Ref EnvType, TaskMemory]
+        LogConfiguration:
+          LogDriver: awslogs
+          Options:
+            awslogs-group: !Ref 'CloudwatchLogsGroup'
+            awslogs-region: !Ref 'AWS::Region'
+            awslogs-stream-prefix: ecs-msg-proj
+        PortMappings:
+        - ContainerPort: 80
+        Environment:
+          - Name: NODE_ENV
+            Value: !FindInMap [EnvironmentVariables, !Ref EnvType, NodeEnv]
+
+  # Service on the ECS Cluster
+  MsgService:
+    Type: AWS::ECS::Service
+    DependsOn: ALBListener
+    Properties:
+      Cluster: !Ref MsgCluster
+      DesiredCount: !FindInMap [Configuration, !Ref EnvType, DesiredTaskCount]
+      LoadBalancers:
+      - ContainerName: !Ref ContainerName
+        ContainerPort: '80'
+        TargetGroupArn: !Ref ECSTargetGroup
+      Role: !Ref ECSServiceRole
+      TaskDefinition: !Ref MsgTask
+
+  # Security Group, simple policy - opens all for all :]
+  WebServerSG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allows access to port 80
+      SecurityGroupIngress:
+      - IpProtocol: -1
+        CidrIp: 0.0.0.0/0
+      - IpProtocol: -1
+        CidrIpv6: ::/0
+      SecurityGroupEgress:
+      - IpProtocol: -1
+        CidrIp: 0.0.0.0/0
+      - IpProtocol: -1
+        CidrIpv6: ::/0
+      VpcId: !FindInMap [Configuration, !Ref EnvType, VPCId]
+
+  # Define the role of ECS service, service permissions
+  ECSServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: [ecs.amazonaws.com]
+          Action: ['sts:AssumeRole']
+      Path: /
+      Policies:
+      - PolicyName: ecs-service
+        PolicyDocument:
+          Statement:
+          - Effect: Allow
+            Action: ['elasticloadbalancing:DeregisterInstancesFromLoadBalancer', 'elasticloadbalancing:DeregisterTargets',
+              'elasticloadbalancing:Describe*', 'elasticloadbalancing:RegisterInstancesWithLoadBalancer',
+              'elasticloadbalancing:RegisterTargets', 'ec2:Describe*', 'ec2:AuthorizeSecurityGroupIngress', 'ecr:*']
+            Resource: '*'
+
+  # Application Load Balancer (ELBv2)
+  ECSALB:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: !Join ["-", [!Ref AppName, msgELB]]
+      Scheme: internet-facing
+      LoadBalancerAttributes:
+      - Key: idle_timeout.timeout_seconds
+        Value: '30'
+      Subnets: !FindInMap [Configuration, !Ref EnvType, SubnetGroups]
+      SecurityGroups: [!Ref WebServerSG]
+
+  # ALB Listener - only HTTP in this case
+  ALBListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+      - Type: forward
+        TargetGroupArn: !Ref ECSTargetGroup
+      LoadBalancerArn: !Ref ECSALB
+      Port: '80'
+      Protocol: HTTP
+
+  # ALB Listener rules
+  ECSALBListenerRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      Actions:
+      - Type: forward
+        TargetGroupArn: !Ref ECSTargetGroup
+      Conditions:
+      - Field: path-pattern
+        Values: [/]
+      ListenerArn: !Ref ALBListener
+      Priority: 1
+
+  # Target Group - Docker & instance mapping
+  ECSTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckIntervalSeconds: 10
+      HealthCheckPath: /health/check
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 2
+      Name: !Join ["-", [!Ref AppName, ECSTargetGroup]]
+      Port: 80
+      Protocol: HTTP
+      UnhealthyThresholdCount: 2
+      VpcId: !FindInMap [Configuration, !Ref EnvType, VPCId]
+
+  # Auto Scaling Group
+  ECSAutoScalingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      HealthCheckType: EC2
+      VPCZoneIdentifier: !FindInMap [Configuration, !Ref EnvType, SubnetGroups]
+      LaunchConfigurationName: !Ref ContainerInstances
+      MinSize: !FindInMap [Configuration, !Ref EnvType, MinSize]
+      MaxSize: !FindInMap [Configuration, !Ref EnvType, MaxSize]
+      DesiredCapacity: !FindInMap [Configuration, !Ref EnvType, DesiredInstanceCapacity]
+      Tags: !FindInMap [Configuration, !Ref EnvType, Tags]
+    CreationPolicy:
+      ResourceSignal:
+        Timeout: PT15M
+    UpdatePolicy:
+      AutoScalingRollingUpdate:
+        MinInstancesInService: '1'
+        MaxBatchSize: '1'
+        PauseTime: PT15M
+        WaitOnResourceSignals: 'true'
+
+  # ASG Role - permissions
+  AutoscalingRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: [application-autoscaling.amazonaws.com]
+          Action: ['sts:AssumeRole']
+      Path: /
+      Policies:
+      - PolicyName: service-autoscaling
+        PolicyDocument:
+          Statement:
+          - Effect: Allow
+            Action: ['application-autoscaling:*', 'cloudwatch:DescribeAlarms', 'cloudwatch:PutMetricAlarm',
+              'ecs:DescribeServices', 'ecs:UpdateService', 'ecr:*']
+            Resource: '*'
+
+  # Instance Launch Config
+  ContainerInstances:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Metadata:
+      AWS::CloudFormation::Init:
+        config:
+          commands:
+            01_add_instance_to_cluster:
+              command: !Sub |
+                #!/bin/bash
+                echo ECS_CLUSTER=${MsgCluster} >> /etc/ecs/ecs.config
+          files:
+            /etc/cfn/cfn-hup.conf:
+              content: !Sub |
+                [main]
+                stack=${AWS::StackId}
+                region=${AWS::Region}
+              mode: '000400'
+              owner: root
+              group: root
+            /etc/cfn/hooks.d/cfn-auto-reloader.conf:
+              content: !Sub |
+                [cfn-auto-reloader-hook]
+                triggers=post.update
+                path=Resources.ContainerInstances.Metadata.AWS::CloudFormation::Init
+                action=/opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource ContainerInstances --region ${AWS::Region}
+          services:
+            sysvinit:
+              cfn-hup:
+                enabled: 'true'
+                ensureRunning: 'true'
+                files: [/etc/cfn/cfn-hup.conf, /etc/cfn/hooks.d/cfn-auto-reloader.conf]
+    Properties:
+      ImageId: !FindInMap [Configuration, !Ref EnvType, ImageId]
+      InstanceType: !FindInMap [Configuration, !Ref EnvType, InstanceType]
+      IamInstanceProfile: !Ref EC2InstanceProfile
+      KeyName: !FindInMap [Configuration, !Ref EnvType, KeyPairName]
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash -xe
+          sudo yum install -y aws-cfn-bootstrap
+          sudo /opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource ContainerInstances --region ${AWS::Region}
+          sudo /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource ECSAutoScalingGroup --region ${AWS::Region}
+      SecurityGroups: [!Ref WebServerSG]
+
+  # EC2 Role - EC2 Permissions
+  EC2Role:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: [ec2.amazonaws.com]
+          Action: ['sts:AssumeRole']
+      Path: /
+      Policies:
+      - PolicyName: ecs-service
+        PolicyDocument:
+          Statement:
+          - Effect: Allow
+            Action:
+            - ecs:CreateCluster
+            - ecs:StartTask
+            - ecs:StopTask
+            - ecs:RegisterContainerInstance
+            - ecs:DeregisterContainerInstance
+            - ecs:DescribeContainerInstances
+            - ecs:DiscoverPollEndpoint
+            - ecs:Submit*
+            - ecs:StartTelemetrySession
+            - ecs:Poll
+            - ecr:*
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            - dynamodb:*
+            Resource: '*'
+
+  # Instance Profile
+  EC2InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: /
+      Roles: [!Ref EC2Role]
+
+  # DNS
+  DNS:
+    Type: AWS::Route53::RecordSet
+    DependsOn: ECSALB
+    Properties:
+      HostedZoneId: !FindInMap [Configuration, !Ref EnvType, HostedZoneId]
+      Name: !Join ['.', [!Ref AppName, 'awsplay.net']]
+      Type: CNAME
+      TTL: '300'
+      ResourceRecords:
+      - !GetAtt ECSALB.DNSName
+
+  # instance scale up policy
+  InstanceScaleUpPolicy:
+    Type: AWS::AutoScaling::ScalingPolicy
+    Properties:
+      AdjustmentType: ChangeInCapacity
+      PolicyType: SimpleScaling
+      Cooldown: 180
+      AutoScalingGroupName: !Ref ECSAutoScalingGroup
+      ScalingAdjustment: 1
+
+  # instance scale down policy
+  InstanceScaleDownPolicy:
+    Type: AWS::AutoScaling::ScalingPolicy
+    Properties:
+      AdjustmentType: ChangeInCapacity
+      PolicyType: SimpleScaling
+      Cooldown: 300
+      AutoScalingGroupName: !Ref ECSAutoScalingGroup
+      ScalingAdjustment: -1
+
+  # ECS service task scale up policy
+  TaskScaleUpPolicy:
+    Type: AWS::ApplicationAutoScaling::ScalingPolicy
+    Properties:
+      PolicyName: TaskScaleUpPolicy
+      PolicyType: StepScaling
+      ScalingTargetId: !Ref ServiceScaling
+      StepScalingPolicyConfiguration:
+        AdjustmentType: ChangeInCapacity
+        Cooldown: 180
+        MetricAggregationType: Average
+        StepAdjustments:
+        - MetricIntervalLowerBound: 0
+          ScalingAdjustment: 1
+
+  # ECS service task scale down policy
+  TaskScaleDownPolicy:
+    Type: AWS::ApplicationAutoScaling::ScalingPolicy
+    Properties:
+      PolicyName: TaskScaleDownPolicy
+      PolicyType: StepScaling
+      ScalingTargetId: !Ref ServiceScaling
+      StepScalingPolicyConfiguration:
+        AdjustmentType: ChangeInCapacity
+        Cooldown: 300
+        MetricAggregationType: Average
+        StepAdjustments:
+        - MetricIntervalUpperBound: 0
+          ScalingAdjustment: -1
+
+  # CloudWatch Alarm for Task scale up
+  ServiceCPUHigh:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Scale-up Tasks if CPU > 50% for 4 minutes
+      MetricName: CPUUtilization
+      Namespace: AWS/ECS
+      Statistic: Average
+      Period: '120'
+      EvaluationPeriods: '2'
+      Threshold: '50'
+      AlarmActions: [!Ref TaskScaleUpPolicy]
+      Dimensions:
+      - Name: ClusterName
+        Value: MsgProj
+      - Name: ServiceName
+        Value: !GetAtt [MsgService, Name]
+      ComparisonOperator: GreaterThanThreshold
+
+  # CloudWatch Alarm for Task scale down
+  ServiceCPULow:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Scale-down Tasks if CPU < 10% for 4 minutes
+      MetricName: CPUUtilization
+      Namespace: AWS/ECS
+      Statistic: Average
+      Period: '120'
+      EvaluationPeriods: '2'
+      Threshold: '10'
+      AlarmActions: [!Ref TaskScaleDownPolicy]
+      Dimensions:
+      - Name: ClusterName
+        Value: MsgProj
+      - Name: ServiceName
+        Value: !GetAtt [MsgService, Name]
+      ComparisonOperator: LessThanThreshold
+
+  # CloudWatch Alarm for Instance scale up - depends on CPU reservation
+  ServiceCPUReservationHigh:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Scale-up Instances if CPUReservation >= 100% for 4 minutes
+      MetricName: CPUReservation
+      Namespace: AWS/ECS
+      Statistic: Average
+      Period: '120'
+      EvaluationPeriods: '2'
+      Threshold: '100'
+      AlarmActions: [!Ref InstanceScaleUpPolicy]
+      Dimensions:
+      - Name: ClusterName
+        Value: MsgProj
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+
+  # CloudWatch Alarm for Instance scale down - depends on CPU reservation
+  ServiceCPUReservationLow:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Scale-down Instances if CPUReservation < 45% for 4 minutes
+      MetricName: CPUReservation
+      Namespace: AWS/ECS
+      Statistic: Average
+      Period: '120'
+      EvaluationPeriods: '2'
+      Threshold: '45'
+      AlarmActions: [!Ref InstanceScaleDownPolicy]
+      Dimensions:
+      - Name: ClusterName
+        Value: MsgProj
+      ComparisonOperator: LessThanThreshold
+
+  # Scalable target
+  ServiceScaling:
+    Type: AWS::ApplicationAutoScaling::ScalableTarget
+    Properties:
+      MinCapacity: !FindInMap [Configuration, !Ref EnvType, MinTaskCount]
+      MaxCapacity: !FindInMap [Configuration, !Ref EnvType, MaxTaskCount]
+      ResourceId: !Join ['/', [service, !Ref MsgCluster, !GetAtt [MsgService, Name]]]
+      RoleARN: !GetAtt [AutoscalingRole, Arn]
+      ScalableDimension: ecs:service:DesiredCount
+      ServiceNamespace: ecs
+
+Outputs:
+  ecsservice:
+    Value: !Ref MsgService
+  ecscluster:
+    Value: !Ref MsgCluster
+  taskdef:
+    Value: !Ref MsgTask
+  elbdns:
+    Value: !GetAtt ECSALB.DNSName
+  prettydns:
+    Value: !Join ['.', [!Ref AppName, 'awsplay.net']]

@@ -1,0 +1,35 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: msg-proj-ecr
+
+Resources:
+  # Use ECR as the Docker Repository
+  ServerDockerRepo:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: msg.proj
+      RepositoryPolicyText:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Sid: RootAllowPushPull
+            Effect: Allow
+            Principal:
+              AWS:
+                - "arn:aws:iam::918544260695:root"
+            Action:
+              - "ecr:GetDownloadUrlForLayer"
+              - "ecr:BatchGetImage"
+              - "ecr:BatchCheckLayerAvailability"
+              - "ecr:PutImage"
+              - "ecr:InitiateLayerUpload"
+              - "ecr:UploadLayerPart"
+              - "ecr:CompleteLayerUpload"
+          -
+            Sid: EveryoneAllowPull
+            Effect: Allow
+            Principal: "*"
+            Action:
+              - ecr:GetDownloadUrlForLayer
+              - ecr:BatchGetImage
+              - ecr:BatchCheckLayerAvailability

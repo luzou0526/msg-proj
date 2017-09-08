@@ -1,0 +1,22 @@
+{
+  "name": "messageproj",
+  "version": "1.0.0",
+  "description": "A project allows user to post/get messages.",
+  "main": "server.js",
+  "scripts": {
+    "test": "npm test"
+  },
+  "keywords": [
+    "Message"
+  ],
+  "author": "Lu Zou",
+  "license": "ISC",
+  "dependencies": {
+    "aws-sdk": "^2.111.0",
+    "hapi": "^16.5.2",
+    "hapi-swagger": "^7.7.1",
+    "inert": "^4.2.1",
+    "joi": "^10.6.0",
+    "vision": "^4.1.1"
+  }
+}
