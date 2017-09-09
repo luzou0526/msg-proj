@@ -4,7 +4,7 @@
   "description": "A project allows user to post/get messages.",
   "main": "server.js",
   "scripts": {
-    "test": "npm test"
+    "test": "mocha tests/**/*test.js --reporter spec"
   },
   "keywords": [
     "Message"
@@ -18,5 +18,9 @@
     "inert": "^4.2.1",
     "joi": "^10.6.0",
     "vision": "^4.1.1"
+  },
+  "devDependencies": {
+    "mocha": "^3.5.0",
+    "mocha-eslint": "^4.1.0"
   }
 }

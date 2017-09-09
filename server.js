@@ -36,6 +36,7 @@ function serverInit(server, callback){
     });
 }
 
+let server;
 // Clusterize service, taking advantage of multi-cores
 if (!process.env.NOCLUSTER && cluster.isMaster){
     let cpuCount = os.cpus().length;
@@ -43,7 +44,7 @@ if (!process.env.NOCLUSTER && cluster.isMaster){
         cluster.fork();
     }
 } else {
-    let server = new hapi.Server();
+    server = new hapi.Server();
     serverInit(server, (err) => {
         if(err) {
             console.error(`Failed to start the server: ${err}`);
