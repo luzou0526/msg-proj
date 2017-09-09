@@ -1,16 +1,16 @@
 #!/usr/bin/env sh
-echo "Operation: (create-stack | update-stack | delete-stack | deploy)"
+echo "Operation: (create-stack | update-stack | delete-stack | deploy | deploy-view)"
 read OPERATION
 
-echo "Stack Name: (ex. msgproj | msgprodecr | msgprodddb)"
-read STACK_NAME
-
-if [ "$OPERATION" = "delete-stack" ]; then
-  aws cloudformation ${OPERATION} --stack-name ${STACK_NAME} --region us-east-1
+if [ "$OPERATION" = "deploy-view" ]; then
+  aws s3 sync ../view s3://msgproj --acl public-read
   exit 0
 fi
 
 if [ "$OPERATION" = "deploy" ]; then
+  echo "Build & push Docker image"
+  ./build_push_docker.sh
+
   echo "Enter docker image: "
   read DOCKER_IMAGE
   TASK_FAMILY="msg-proj-prod"
@@ -35,7 +35,16 @@ if [ "$OPERATION" = "deploy" ]; then
   # Use the new task def
   echo "Apple new task definition"
   aws ecs update-service --region us-east-1 --cluster MsgProj --service $SERVICE_NAME --task-definition ${TASK_FAMILY}:${CURRENT_REVISION}
+
   echo "done"
+  exit 0
+fi
+
+echo "Stack Name: (ex. msgproj | msgprodecr | msgprodddb)"
+read STACK_NAME
+
+if [ "$OPERATION" = "delete-stack" ]; then
+  aws cloudformation ${OPERATION} --stack-name ${STACK_NAME} --region us-east-1
   exit 0
 fi
 
