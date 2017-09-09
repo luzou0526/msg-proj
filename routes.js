@@ -27,7 +27,7 @@ module.exports = [
     },
     {
         method: 'DELETE',
-        path: '/deleteMessages',
+        path: '/deleteMessage',
         config: deleteMessages
     }
 ];
