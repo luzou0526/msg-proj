@@ -2,7 +2,7 @@
 
 const healthCheck = require('./lib/healthCheck'),
       postMessage = require('./lib/postMessage'),
-      getMessage = require('./lib/getMessageByName');
+      getMessages = require('./lib/getMessages');
 
 module.exports = [
     {
@@ -19,7 +19,7 @@ module.exports = [
     },
     {
         method: 'GET',
-        path: '/getMessageByName',
-        config: getMessage
+        path: '/getMessages',
+        config: getMessages
     }
 ];
