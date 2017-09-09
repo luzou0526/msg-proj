@@ -70,5 +70,15 @@ module.exports = {
             };
             server.inject(options, resolve);
         });
+    },
+    delete: function (url, payload) {
+        return new Promise(resolve => {
+            let options = {
+                method: 'DELETE',
+                url,
+                payload
+            };
+            server.inject(options, resolve);
+        });
     }
 };

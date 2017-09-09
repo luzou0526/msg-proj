@@ -15,11 +15,9 @@ Resources:
           AttributeName: "TimeStamp"
           AttributeType: "S"
       KeySchema:
-        # Partition Key is UserName, Sort Key is TimeStamp
-        # UserName can duplicate, but username + timestamp won't
         -
           AttributeName: "UserName"
-          KeyType: "HASH"
+          KeyType: "RANGE"
         -
           AttributeName: "TimeStamp"
           KeyType: "RANGE"

@@ -2,7 +2,8 @@
 
 const healthCheck = require('./lib/healthCheck'),
       postMessage = require('./lib/postMessage'),
-      getMessages = require('./lib/getMessages');
+      getMessages = require('./lib/getMessages'),
+      deleteMessages = require('./lib/deleteMessages');
 
 module.exports = [
     {
@@ -21,5 +22,10 @@ module.exports = [
         method: 'GET',
         path: '/getMessages',
         config: getMessages
+    },
+    {
+        method: 'DELETE',
+        path: '/deleteMessages',
+        config: deleteMessages
     }
 ];
