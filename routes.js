@@ -3,9 +3,9 @@
 'use strict';
 
 const healthCheck = require('./lib/healthCheck'),
-      postMessage = require('./lib/postMessage'),
-      getMessages = require('./lib/getMessages'),
-      deleteMessages = require('./lib/deleteMessages');
+      postMessage = require('./lib/postMessage').config,
+      getMessages = require('./lib/getMessages').config,
+      deleteMessages = require('./lib/deleteMessages').config;
 
 module.exports = [
     {

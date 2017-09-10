@@ -8,18 +8,18 @@ let chai = require('chai'),
 
 describe('#isPalindrome', function(){
     it('empty string shoud be true', function () {
-        utils.isPalindrome('').should.be.equal(true);
+        expect(utils.isPalindrome('')).to.be.true;
     });
 
     it('one character string shoud be true', function () {
-        utils.isPalindrome('?').should.be.equal(true);
+        expect(utils.isPalindrome('?')).to.be.true;
     });
 
     it('abcdcba should be true', function(){
-        utils.isPalindrome('abcdcba').should.be.equal(true);
-    })
+        expect(utils.isPalindrome('abcdcba')).to.be.true;
+    });
 
     it('abcdcba? should be false', function(){
-        utils.isPalindrome('abcdcba?').should.be.equal(false);
-    })
+        expect(utils.isPalindrome('abcdcba?')).to.be.false;
+    });
 });
