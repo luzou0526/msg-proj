@@ -5,19 +5,107 @@
     <title>React JS</title>
 </head>
 <body>
-    <div id="app"></div>
+    <div id="SetUserName"></div>
+    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.14.7/react.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.14.7/react-dom.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.23/browser.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <script type="text/babel">
-        var HelloComponent = React.createClass({
-            render: function() {
-                return (
-                    <h1>Hello, World!</h1>
-                )
+        class PostMessageForm extends React.Component {
+            constructor(props) {
+              super(props);
+              this.state = {
+                UserName: '',
+                MessageBody: '',
+                Extra: ''
+              };
+
+              this.handleChange = this.handleChange.bind(this);
+              this.handleSubmit = this.handleSubmit.bind(this);
             }
-        })
-        ReactDOM.render(<HelloComponent />, document.querySelector('#app'))
+
+            validateParams(){
+                if(this.state.UserName === ''){
+                    alert('User Name must not be empty.');
+                    return false;
+                } else if (this.state.MessageBody === ''){
+                    alert('Message must not be empty.')
+                    return false;
+                }
+                if (this.state.Extra === '') {
+                    this.state.Extra = "\"\"";
+                }
+                return true;
+            }
+
+            handleChange(event) {
+              let ftype = event.target.dataset.ftype;
+              let value = event.target.value;
+
+              switch(ftype){
+                case 'UserName':
+                  this.setState({UserName: value});
+                  break;
+                case 'MessageBody':
+                  this.setState({MessageBody: value});
+                  break;
+                default:
+                  this.setState({Extra: value});
+              }
+            }
+
+            handleSubmit(event) {
+              event.preventDefault();
+              if(this.validateParams()){
+                  $.ajax({
+                      type: 'POST',
+                      url: 'http://0.0.0.0/postMessage?' + $.param(this.state),
+                      success: (data) => {
+                          alert("Message Posted!");
+                          this.setState({MessageBody: ''});
+                          this.setState({Extra: ''});
+                      },
+                      error: (err) => {
+                          console.log(err);
+                      },
+                  });
+              }
+            }
+
+            render() {
+              return (
+                <form className="form-horizontal" onSubmit={this.handleSubmit}>
+                  <h2> Post A Message </h2>
+                  <div className="form-group">
+                    <label className="col-sm-2 control-label">User Name:</label>
+                    <div className="col-sm-8">
+                      <input type="text" className="form-control" data-ftype="UserName" value={this.state.UserName} onChange={this.handleChange} />
+                    </div>
+                  </div>
+
+                  <div className="form-group">
+                    <label className="col-sm-2 control-label">Message:</label>
+                    <div className="col-sm-8">
+                      <textarea type="text" className="form-control" data-ftype="MessageBody" value={this.state.MessageBody} onChange={this.handleChange} />
+                    </div>
+                  </div>
+
+                  <div className="form-group">
+                    <label className="col-sm-2 control-label">Additional Info:</label>
+                    <div className="col-sm-8">
+                      <input type="text" className="form-control" data-ftype="Extra" value={this.state.Extra} onChange={this.handleChange} />
+                    </div>
+                  </div>
+
+                  <button type="submit" className="btn btn-primary">Post Message</button>
+                </form>
+              );
+            }
+        };
+
+        ReactDOM.render(<PostMessageForm />, document.querySelector('#SetUserName'));
     </script>
 </body>
 </html>
