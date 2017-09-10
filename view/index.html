@@ -69,7 +69,7 @@
               if(this.validateParams()){
                   $.ajax({
                       type: 'POST',
-                      url: 'http://msg-proj-prod.awsplay.net/postMessage?' + $.param(reqParams()),
+                      url: 'http://msg-proj-prod.awsplay.net/postMessage?' + $.param(this.reqParams()),
                       success: (data) => {
                           alert("Message Posted!");
                           this.setState({MessageBody: ''});
