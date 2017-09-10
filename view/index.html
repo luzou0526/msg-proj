@@ -34,10 +34,18 @@
                     alert('Message must not be empty.')
                     return false;
                 }
-                if (this.state.Extra === '') {
-                    this.state.Extra = "\"\"";
-                }
                 return true;
+            }
+
+            reqParams(){
+                let params = {
+                  UserName: this.state.UserName,
+                  MessageBody: this.state.MessageBody
+                }
+                if(this.state.Extra !== ''){
+                  params['Extra'] = this.state.Extra;
+                }
+                return params;
             }
 
             handleChange(event) {
@@ -61,7 +69,7 @@
               if(this.validateParams()){
                   $.ajax({
                       type: 'POST',
-                      url: 'http://0.0.0.0/postMessage?' + $.param(this.state),
+                      url: 'http://msg-proj-prod.awsplay.net/postMessage?' + $.param(reqParams()),
                       success: (data) => {
                           alert("Message Posted!");
                           this.setState({MessageBody: ''});
@@ -99,9 +107,46 @@
                     </div>
                   </div>
 
-                  <button type="submit" className="btn btn-primary">Post Message</button>
+                  <button type="submit" className="btn btn-primary pull-right">Post Message</button>
                 </form>
               );
+            }
+        };
+
+        class GetMessageForm extends React.Component {
+            constructor(props) {
+              super(props);
+
+              this.state = {
+                Messages: ''
+              };
+
+              $.ajax({
+                  type: 'POST',
+                  url: 'http://0.0.0.0/postMessage?' + $.param(this.state),
+                  success: (data) => {
+                      alert("Message Posted!");
+                      this.setState({MessageBody: ''});
+                      this.setState({Extra: ''});
+                  },
+                  error: (err) => {
+                      console.log(err);
+                  },
+              });
+              this.handleChange = this.handleChange.bind(this);
+              this.handleSubmit = this.handleSubmit.bind(this);
+            }
+
+            handleChange(event) {
+
+            }
+
+            handleSubmit(event) {
+
+            }
+
+            render() {
+              return (<h1> h </h1>);
             }
         };
 
