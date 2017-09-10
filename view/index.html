@@ -24,6 +24,7 @@
               this.handleSubmit = this.handleSubmit.bind(this);
             }
 
+            // Front end validate
             validateParams(){
                 if(this.state.UserName === ''){
                     alert('User Name must not be empty.');
@@ -35,6 +36,7 @@
                 return true;
             }
 
+            // Parameters for the post request
             reqParams(){
                 let params = {
                   UserName: this.state.UserName,
@@ -46,6 +48,7 @@
                 return params;
             }
 
+            // handler when any field of the form changes
             handleChange(event) {
               let ftype = event.target.dataset.ftype;
               let value = event.target.value;
@@ -62,6 +65,7 @@
               }
             }
 
+            // Submit the form for post
             handleSubmit(event) {
               event.preventDefault();
               if(this.validateParams()){
@@ -119,33 +123,60 @@
 
               this.state = {
                 Messages: [],
-                UserName: ''
+                UserName: '',
+                Pages: [''],
+                curPage: 0
               };
+
+              // Initially get all messages with no filter
               this.getRequestCall();
+
               this.handleChange = this.handleChange.bind(this);
               this.handleSubmit = this.handleSubmit.bind(this);
               this.handleDelete = this.handleDelete.bind(this);
               this.handleInfo = this.handleInfo.bind(this);
+              this.handlePreviousPage = this.handlePreviousPage.bind(this);
+              this.handleNextPage = this.handleNextPage.bind(this);
             }
 
+            // Ajax call for get Message
             getRequestCall(){
               $.ajax({
                   type: 'GET',
                   url: 'http://msg-proj-prod.awsplay.net/getMessages?' + $.param(this.getReqParams()),
                   success: (data) => {
                       this.setState({Messages: data.results});
+                      let lkey = data.meta.LastEvaluatedKey;
+                      if(lkey){
+                        // If there are more data in the DB, push the start key of the next page to states
+                        // If go to pre page, don't need to store start key again
+                        let newPages = this.state.Pages;
+                        if(this.state.curPage >= this.state.Pages.length - 1){
+                          newPages.push({"UserName": lkey.UserName.S, "TimeStamp": lkey.TimeStamp.S});
+                        }
+                        this.setState({Pages: newPages});
+                      }
                   },
                   error: (err) => {
-                      alert(err);
+                      // If the page becomes negative or over the upper limit
+                      alert("No More Messages.");
+                      if(this.state.curPage < 0){
+                        this.state.curPage = 0;
+                      }else if(this.state.curPage > this.state.Pages.length - 1){
+                        this.state.curPage = this.state.Pages.length - 1;
+                      }
                   }
               });
             }
 
+            // Ajax call for delete
             deleteRequestCall(index){
               $.ajax({
                   type: 'Delete',
                   url: 'http://msg-proj-prod.awsplay.net/deleteMessage?' + $.param(this.deleteReqParams(index)),
                   success: (data) => {
+                      this.state.Pages = [""];
+                      this.state.curPage = 0;
                       this.getRequestCall();
                   },
                   error: (err) => {
@@ -154,6 +185,7 @@
               });
             }
 
+            // Parameters for get message request
             getReqParams(){
                 let params = {
                   Limit: 10
@@ -161,9 +193,13 @@
                 if(this.state.UserName !== ''){
                   params['UserName'] = this.state.UserName;
                 }
+                if(this.state.curPage !== 0){
+                  params['StartKey'] = JSON.stringify(this.state.Pages[this.state.curPage]);
+                }
                 return params;
             }
 
+            // Parameters for delete message request
             deleteReqParams(index){
                 let message = this.state.Messages[index];
                 return {
@@ -172,21 +208,26 @@
                 };
             }
 
+            // Handler when Search Username changes
             handleChange(event) {
               this.setState({UserName: event.target.value});
             }
 
+            // Handler for Search submit
             handleSubmit(event) {
               event.preventDefault();
+              this.setState({Pages: [''], curPage: 0});
               this.getRequestCall();
             }
 
+            // Handler for delete a message
             handleDelete(event){
               event.preventDefault();
               event.stopPropagation();
               this.deleteRequestCall(event.target.dataset.index);
             }
 
+            // Handler for more information
             handleInfo(event){
               let message = this.state.Messages[event.target.dataset.index];
               let info =
@@ -197,6 +238,18 @@ isPalindrome: ${message.isPalindrome}\n
 Extra Info: ${message.Extra} \n
               `;
               alert(info);
+            }
+
+            // Handler for go to previous page
+            handlePreviousPage(event){
+              this.state.curPage--;
+              this.getRequestCall();
+            }
+
+            // Handler for go to next page
+            handleNextPage(event){
+              this.state.curPage++;
+              this.getRequestCall();
             }
 
             render() {
@@ -241,6 +294,10 @@ Extra Info: ${message.Extra} \n
                       )}
                     </tbody>
                   </table>
+                  <div>
+                    <a className='btn pull-left' onClick={this.handlePreviousPage}>Previous</a>
+                    <a className='btn pull-right' onClick={this.handleNextPage}>Next</a>
+                  </div>
                 </div>
               );
             }
