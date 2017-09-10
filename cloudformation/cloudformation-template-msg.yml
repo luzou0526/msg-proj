@@ -21,7 +21,7 @@ Parameters:
     Type: String
   BucketName:
     Description: S3 Bucket for view rendering
-    Default: msgproj
+    Default: msgproj.awsplay.net
     Type: String
 
 Mappings:
@@ -437,6 +437,18 @@ Resources:
       TTL: '300'
       ResourceRecords:
       - !GetAtt ECSALB.DNSName
+
+  # API DNS
+  ViewDNS:
+    Type: AWS::Route53::RecordSet
+    DependsOn: ECSALB
+    Properties:
+      HostedZoneId: !FindInMap [Configuration, !Ref EnvType, HostedZoneId]
+      Name: !Join ['.', ['msgproj', 'awsplay.net']]
+      Type: CNAME
+      TTL: '300'
+      ResourceRecords:
+      - http://msgproj.awsplay.net.s3-website-us-east-1.amazonaws.com
 
   # instance scale up policy
   InstanceScaleUpPolicy:

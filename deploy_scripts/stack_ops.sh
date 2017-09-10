@@ -3,7 +3,7 @@ echo "Operation: (create-stack | update-stack | delete-stack | deploy | deploy-v
 read OPERATION
 
 if [ "$OPERATION" = "deploy-view" ]; then
-  aws s3 sync ../view s3://msgproj --acl public-read
+  aws s3 sync ../view s3://msgproj.awsplay.net --acl public-read
   exit 0
 fi
 
