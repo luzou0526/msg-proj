@@ -62,6 +62,10 @@
               }
             }
 
+            deleteAMessage(){
+
+            }
+
             handleSubmit(event) {
               event.preventDefault();
               if(this.validateParams()){
@@ -121,15 +125,16 @@
                 Messages: [],
                 UserName: ''
               };
-              this.requestCall();
+              this.getRequestCall();
               this.handleChange = this.handleChange.bind(this);
               this.handleSubmit = this.handleSubmit.bind(this);
+              this.handleDelete = this.handleDelete.bind(this);
             }
 
-            requestCall(){
+            getRequestCall(){
               $.ajax({
                   type: 'GET',
-                  url: 'http://msg-proj-prod.awsplay.net/getMessages?' + $.param(this.reqParams()),
+                  url: 'http://msg-proj-prod.awsplay.net/getMessages?' + $.param(this.getReqParams()),
                   success: (data) => {
                       this.setState({Messages: data.results});
                   },
@@ -139,7 +144,20 @@
               });
             }
 
-            reqParams(){
+            deleteRequestCall(index){
+              $.ajax({
+                  type: 'Delete',
+                  url: 'http://msg-proj-prod.awsplay.net/deleteMessage?' + $.param(this.deleteReqParams(index)),
+                  success: (data) => {
+                      this.getRequestCall();
+                  },
+                  error: (err) => {
+                      alert(err);
+                  }
+              });
+            }
+
+            getReqParams(){
                 let params = {
                   Limit: 10
                 };
@@ -149,13 +167,27 @@
                 return params;
             }
 
+            deleteReqParams(index){
+                let message = this.state.Messages[index];
+                return {
+                  UserName: message.UserName,
+                  TimeStamp: message.TimeStamp
+                };
+            }
+
             handleChange(event) {
               this.setState({UserName: event.target.value});
             }
 
             handleSubmit(event) {
               event.preventDefault();
-              this.requestCall();
+              this.getRequestCall();
+            }
+
+            handleDelete(event){
+              event.preventDefault();
+              event.stopPropagation();
+              this.deleteRequestCall(event.target.dataset.index);
             }
 
             render() {
@@ -185,12 +217,12 @@
                         <tr key={row.UserName + row.TimeStamp} >
                           <td>{row.MessageBody}</td>
                           <td>
-                            <button type="button" className="btn btn-success" aria-label="Left Align">
-                              <span className="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+                            <button type="button" data-index={i} className="btn btn-success" aria-label="Left Align">
+                              <span data-index={i} className="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
                             </button>
                             &nbsp;
-                            <button type="button" className="btn btn-danger" aria-label="Left Align">
-                              <span className="glyphicon glyphicon-remove-sign" aria-hidden="true"></span>
+                            <button type="button" data-index={i} onClick={this.handleDelete} className="btn btn-danger" aria-label="Left Align">
+                              <span data-index={i} className="glyphicon glyphicon-remove-sign" aria-hidden="true"></span>
                             </button>
                           </td>
                         </tr>
