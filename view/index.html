@@ -75,7 +75,7 @@
                       },
                       error: (err) => {
                           alert(err);
-                      },
+                      }
                   });
               }
             }
@@ -105,9 +105,8 @@
                       <div className="col-sm-8">
                         <input type="text" className="form-control" data-ftype="Extra" value={this.state.Extra} onChange={this.handleChange} />
                       </div>
+                      <button type="submit" className="btn btn-primary">Post Message</button>
                     </div>
-
-                    <button type="submit" className="btn btn-primary pull-right">Post Message</button>
                   </form>
                 </div>
               );
@@ -119,35 +118,61 @@
               super(props);
 
               this.state = {
-                Messages: []
+                Messages: [],
+                UserName: ''
               };
+              this.requestCall();
+              this.handleChange = this.handleChange.bind(this);
+              this.handleSubmit = this.handleSubmit.bind(this);
+            }
 
+            requestCall(){
               $.ajax({
                   type: 'GET',
-                  url: 'http://msg-proj-prod.awsplay.net/getMessages',
+                  url: 'http://msg-proj-prod.awsplay.net/getMessages?' + $.param(this.reqParams()),
                   success: (data) => {
                       this.setState({Messages: data.results});
                   },
                   error: (err) => {
                       alert(err);
-                  },
+                  }
               });
-              this.handleChange = this.handleChange.bind(this);
-              this.handleSubmit = this.handleSubmit.bind(this);
+            }
+
+            reqParams(){
+                let params = {
+                  Limit: 10
+                };
+                if(this.state.UserName !== ''){
+                  params['UserName'] = this.state.UserName;
+                }
+                return params;
             }
 
             handleChange(event) {
-
+              this.setState({UserName: event.target.value});
             }
 
             handleSubmit(event) {
-
+              event.preventDefault();
+              this.requestCall();
             }
 
             render() {
               return (
                 <div>
-                  <h2> Posted Messages </h2>
+                  <h2> Messages </h2>
+                  <form className="form-horizontal" onSubmit={this.handleSubmit}>
+                    <br />
+                    <div className="form-group">
+                      <label className="col-sm-2 control-label">Enter a User Name:</label>
+                      <div className="col-sm-8">
+                        <input type="text" className="form-control" value={this.state.UserName} onChange={this.handleChange} />
+                      </div>
+                      <button type="submit" className="btn btn-primary">Get Messages</button>
+                    </div>
+                  </form>
+
                   <table className="table table-hover">
                     <thead>
                       <tr>
