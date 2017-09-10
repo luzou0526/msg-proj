@@ -62,10 +62,6 @@
               }
             }
 
-            deleteAMessage(){
-
-            }
-
             handleSubmit(event) {
               event.preventDefault();
               if(this.validateParams()){
@@ -129,6 +125,7 @@
               this.handleChange = this.handleChange.bind(this);
               this.handleSubmit = this.handleSubmit.bind(this);
               this.handleDelete = this.handleDelete.bind(this);
+              this.handleInfo = this.handleInfo.bind(this);
             }
 
             getRequestCall(){
@@ -190,6 +187,18 @@
               this.deleteRequestCall(event.target.dataset.index);
             }
 
+            handleInfo(event){
+              let message = this.state.Messages[event.target.dataset.index];
+              let info =
+              `Author: ${message.UserName} \n
+Message: ${message.MessageBody} \n
+Post Time: ${(new Date(parseInt(message.TimeStamp))).toString()} \n
+isPalindrome: ${message.isPalindrome}\n
+Extra Info: ${message.Extra} \n
+              `;
+              alert(info);
+            }
+
             render() {
               return (
                 <div>
@@ -215,9 +224,12 @@
                     <tbody>
                       {this.state.Messages.map((row,i) =>
                         <tr key={row.UserName + row.TimeStamp} >
-                          <td>{row.MessageBody}</td>
                           <td>
-                            <button type="button" data-index={i} className="btn btn-success" aria-label="Left Align">
+                            <span title='Palindrome Message' data-index={i} className="glyphicon glyphicon-ok-circle" style={{visibility: (row.isPalindrome ? 'blocked' : 'hidden')}} aria-hidden="true">&nbsp;</span>
+                            {row.MessageBody}
+                          </td>
+                          <td>
+                            <button type="button" data-index={i} onClick={this.handleInfo} className="btn btn-success" aria-label="Left Align">
                               <span data-index={i} className="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
                             </button>
                             &nbsp;
