@@ -5,7 +5,6 @@
     <title>React JS</title>
 </head>
 <body>
-    <div id="SetUserName"></div>
     <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.14.7/react.js"></script>
@@ -21,7 +20,6 @@
                 MessageBody: '',
                 Extra: ''
               };
-
               this.handleChange = this.handleChange.bind(this);
               this.handleSubmit = this.handleSubmit.bind(this);
             }
@@ -76,7 +74,7 @@
                           this.setState({Extra: ''});
                       },
                       error: (err) => {
-                          console.log(err);
+                          alert(err);
                       },
                   });
               }
@@ -84,53 +82,54 @@
 
             render() {
               return (
-                <form className="form-horizontal" onSubmit={this.handleSubmit}>
+                <div>
                   <h2> Post A Message </h2>
-                  <div className="form-group">
-                    <label className="col-sm-2 control-label">User Name:</label>
-                    <div className="col-sm-8">
-                      <input type="text" className="form-control" data-ftype="UserName" value={this.state.UserName} onChange={this.handleChange} />
+                  <form className="form-horizontal" onSubmit={this.handleSubmit}>
+                    <br />
+                    <div className="form-group">
+                      <label className="col-sm-2 control-label">User Name:</label>
+                      <div className="col-sm-8">
+                        <input type="text" className="form-control" data-ftype="UserName" value={this.state.UserName} onChange={this.handleChange} />
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="form-group">
-                    <label className="col-sm-2 control-label">Message:</label>
-                    <div className="col-sm-8">
-                      <textarea type="text" className="form-control" data-ftype="MessageBody" value={this.state.MessageBody} onChange={this.handleChange} />
+                    <div className="form-group">
+                      <label className="col-sm-2 control-label">Message:</label>
+                      <div className="col-sm-8">
+                        <textarea type="text" className="form-control" data-ftype="MessageBody" value={this.state.MessageBody} onChange={this.handleChange} />
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="form-group">
-                    <label className="col-sm-2 control-label">Additional Info:</label>
-                    <div className="col-sm-8">
-                      <input type="text" className="form-control" data-ftype="Extra" value={this.state.Extra} onChange={this.handleChange} />
+                    <div className="form-group">
+                      <label className="col-sm-2 control-label">Additional Info:</label>
+                      <div className="col-sm-8">
+                        <input type="text" className="form-control" data-ftype="Extra" value={this.state.Extra} onChange={this.handleChange} />
+                      </div>
                     </div>
-                  </div>
 
-                  <button type="submit" className="btn btn-primary pull-right">Post Message</button>
-                </form>
+                    <button type="submit" className="btn btn-primary pull-right">Post Message</button>
+                  </form>
+                </div>
               );
             }
         };
 
-        class GetMessageForm extends React.Component {
+        class GetMessages extends React.Component {
             constructor(props) {
               super(props);
 
               this.state = {
-                Messages: ''
+                Messages: []
               };
 
               $.ajax({
-                  type: 'POST',
-                  url: 'http://0.0.0.0/postMessage?' + $.param(this.state),
+                  type: 'GET',
+                  url: 'http://msg-proj-prod.awsplay.net/getMessages',
                   success: (data) => {
-                      alert("Message Posted!");
-                      this.setState({MessageBody: ''});
-                      this.setState({Extra: ''});
+                      this.setState({Messages: data.results});
                   },
                   error: (err) => {
-                      console.log(err);
+                      alert(err);
                   },
               });
               this.handleChange = this.handleChange.bind(this);
@@ -146,11 +145,44 @@
             }
 
             render() {
-              return (<h1> h </h1>);
+              return (
+                <div>
+                  <h2> Posted Messages </h2>
+                  <table className="table table-hover">
+                    <thead>
+                      <tr>
+                        <th className="col-xs-9 col-sm-10">Message</th>
+                        <th className="col-xs-3 col-sm-2">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {this.state.Messages.map((row,i) =>
+                        <tr key={row.UserName + row.TimeStamp} >
+                          <td>{row.MessageBody}</td>
+                          <td>
+                            <button type="button" className="btn btn-success" aria-label="Left Align">
+                              <span className="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+                            </button>
+                            &nbsp;
+                            <button type="button" className="btn btn-danger" aria-label="Left Align">
+                              <span className="glyphicon glyphicon-remove-sign" aria-hidden="true"></span>
+                            </button>
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              );
             }
         };
 
         ReactDOM.render(<PostMessageForm />, document.querySelector('#SetUserName'));
+        ReactDOM.render(<GetMessages />, document.querySelector('#MessageList'));
     </script>
+
+    <div id="SetUserName"></div>
+    <br><br>
+    <div id="MessageList"></div>
 </body>
 </html>
