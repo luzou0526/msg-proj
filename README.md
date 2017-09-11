@@ -7,7 +7,9 @@ Before start, we need to get AWS authentication.
 - run `aws ecr get-login`. The output is a docker login command with temporary credentials. Remove `-e none` in the output, and run the command. 
 
 Now we can start :)
-The Service should be deployed and run on AWS. First go the the root directory of the project. 
+The Service should be deployed and run on AWS. Currently it can only be deployed to Lu's personal AWS account because there will be too many parameters passing and configs in the building process, which is beyond the scope of this project.
+
+First go the the root directory of the project. 
 - Build Stack (If the service has never been deployed on aws before):
   - `cd deploy_scripts`
   - Give all .sh files exec permission. (ex. chmod 755 * ). Then we can build/deploy using `stack_ops.sh`.
