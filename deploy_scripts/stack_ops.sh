@@ -63,3 +63,7 @@ fi
 
 echo $TEMPLATE
 aws cloudformation $OPERATION --stack-name ${STACK_NAME} --template-body file://../cloudformation/${TEMPLATE} --capabilities CAPABILITY_IAM --region us-east-1
+
+if [ "$STACK_NAME" = "msgprojecr" ]; then
+  ./build_push_docker.sh
+fi
