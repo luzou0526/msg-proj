@@ -40,15 +40,26 @@ if [ "$OPERATION" = "deploy" ]; then
   exit 0
 fi
 
-echo "Stack Name: (ex. msgproj | msgprodecr | msgprodddb)"
+echo "Stack Name: (ex. msgproj | msgprojecr | msgprojddb)"
 read STACK_NAME
 
 if [ "$OPERATION" = "delete-stack" ]; then
+  if [ "$STACK_NAME" = "msgproj" ]; then
+    aws s3 rm s3://msgproj.awsplay.net --recursive
+  fi
+
   aws cloudformation ${OPERATION} --stack-name ${STACK_NAME} --region us-east-1
   exit 0
 fi
 
-echo "Path to template: (ex. cloudformation-template-msg.yml | cloudformation-template-ecr.yml | cloudformation-template-ddb.yml)"
-read TEMPLATE
+TEMPLATE=""
+if [ "$STACK_NAME" = "msgproj" ]; then
+  TEMPLATE="cloudformation-template-msg.yml"
+elif [ "$STACK_NAME" = "msgprojecr" ]; then
+  TEMPLATE="cloudformation-template-ecr.yml"
+elif [ "$STACK_NAME" = "msgprojddb" ]; then
+  TEMPLATE="cloudformation-template-ddb.yml"
+fi
 
+echo $TEMPLATE
 aws cloudformation $OPERATION --stack-name ${STACK_NAME} --template-body file://../cloudformation/${TEMPLATE} --capabilities CAPABILITY_IAM --region us-east-1

@@ -17,7 +17,7 @@ Resources:
       KeySchema:
         -
           AttributeName: "UserName"
-          KeyType: "RANGE"
+          KeyType: "HASH"
         -
           AttributeName: "TimeStamp"
           KeyType: "RANGE"
