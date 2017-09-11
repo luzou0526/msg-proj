@@ -2,42 +2,50 @@
   "containerDefinitions": [
     {
       "cpu": 1024,
-      "links": [],
-      "environment": [
-        {
-          "name": "NODE_ENV",
-          "value": "prod"
-        }
-      ],
-      "memory": 900,
-      "extraHosts": [],
-      "essential": true,
-      "mountPoints": [],
-      "dockerSecurityOptions": [],
-      "dockerLabels": {},
-      "dnsSearchDomains": [],
       "logConfiguration": {
         "logDriver": "awslogs",
         "options": {
-          "awslogs-stream-prefix": "ecs-msg-proj",
           "awslogs-group": "ECSLogGroup-msgproj",
-          "awslogs-region": "us-east-1"
+          "awslogs-region": "us-east-1",
+          "awslogs-stream-prefix": "ecs-msg-proj"
         }
       },
-      "ulimits": [],
-      "volumesFrom": [],
       "dnsServers": [],
-      "name": "msg-proj-prod",
-      "portMappings": [
+      "links": [],
+      "environment": [
         {
-          "containerPort": 80,
-          "protocol": "tcp",
-          "hostPort": 0
+          "value": "prod",
+          "name": "NODE_ENV"
+        },
+        {
+          "value": "80",
+          "name": "Port"
+        },
+        {
+          "value": "msgprojddb-DDBTable-18HA57RJ7M1OZ",
+          "name": "DDB"
         }
       ],
+      "mountPoints": [],
+      "extraHosts": [],
+      "memory": 900,
+      "name": "msg-proj-prod",
       "command": [],
+      "ulimits": [],
+      "entryPoint": [],
+      "dnsSearchDomains": [],
+      "dockerLabels": {},
+      "portMappings": [
+        {
+          "hostPort": 0,
+          "containerPort": 80,
+          "protocol": "tcp"
+        }
+      ],
+      "dockerSecurityOptions": [],
       "image": "918544260695.dkr.ecr.us-east-1.amazonaws.com/msg.proj:latest",
-      "entryPoint": []
+      "volumesFrom": [],
+      "essential": true
     }
   ],
   "volumes": []

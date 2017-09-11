@@ -104,3 +104,10 @@ Resources:
         ScaleOutCooldown: 60
         PredefinedMetricSpecification:
           PredefinedMetricType: DynamoDBReadCapacityUtilization
+
+Outputs:
+  DDBTable:
+    Value:
+      Ref: DDBTable
+    Export:
+      Name: msgproj-ddb

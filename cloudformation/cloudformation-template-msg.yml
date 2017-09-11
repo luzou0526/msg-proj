@@ -203,7 +203,8 @@ Resources:
           - Name: Port
             Value: 80
           - Name: DDB
-            Value: !Ref DynamoDB
+            Value:
+              Fn::ImportValue: msgproj-ddb
 
   # Service on the ECS Cluster
   MsgService:
