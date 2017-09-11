@@ -66,7 +66,7 @@ First go the the root directory of the project.
     ```
     UI Deployment is a upload process to the S3 bucket.
 
-- Access Service:
+## Access Service:
   - Access UI: http://msgproj.awsplay.net
   - Access API: http://msg-proj-prod.awsplay.net
   - API Documentation (Swagger): http://msg-proj-prod.awsplay.net/documentation
