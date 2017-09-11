@@ -23,6 +23,10 @@ Parameters:
     Description: S3 Bucket for view rendering
     Default: msgproj.awsplay.net
     Type: String
+  DynamoDB:
+    Description: DDBTable Name
+    Default: msgprojddb-DDBTable-18HA57RJ7M1OZ
+    Type: String
 
 Mappings:
   Configuration:
@@ -196,6 +200,10 @@ Resources:
         Environment:
           - Name: NODE_ENV
             Value: !FindInMap [EnvironmentVariables, !Ref EnvType, NodeEnv]
+          - Name: Port
+            Value: 80
+          - Name: DDB
+            Value: !Ref DynamoDB
 
   # Service on the ECS Cluster
   MsgService:

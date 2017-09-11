@@ -62,7 +62,7 @@ elif [ "$STACK_NAME" = "msgprojddb" ]; then
 fi
 
 echo $TEMPLATE
-aws cloudformation $OPERATION --stack-name ${STACK_NAME} --template-body file://../cloudformation/${TEMPLATE} --capabilities CAPABILITY_IAM --region us-east-1
+aws cloudformation $OPERATION --stack-name ${STACK_NAME} --template-body file://../cloudformation/${TEMPLATE} --capabilities CAPABILITY_IAM --parameters ParameterKey=DDB,ParameterValue=msgprojddb-DDBTable-18HA57RJ7M1OZ --region us-east-1
 
 if [ "$STACK_NAME" = "msgprojecr" ]; then
   ./build_push_docker.sh

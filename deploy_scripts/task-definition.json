@@ -1,16 +1,21 @@
 {
   "containerDefinitions": [
     {
-      "portMappings": [
+      "cpu": 1024,
+      "links": [],
+      "environment": [
         {
-          "protocol": "tcp",
-          "containerPort": 80,
-          "hostPort": 0
+          "name": "NODE_ENV",
+          "value": "prod"
         }
       ],
-      "dockerSecurityOptions": [],
-      "volumesFrom": [],
       "memory": 900,
+      "extraHosts": [],
+      "essential": true,
+      "mountPoints": [],
+      "dockerSecurityOptions": [],
+      "dockerLabels": {},
+      "dnsSearchDomains": [],
       "logConfiguration": {
         "logDriver": "awslogs",
         "options": {
@@ -19,25 +24,20 @@
           "awslogs-region": "us-east-1"
         }
       },
-      "essential": true,
-      "entryPoint": [],
-      "command": [],
-      "dnsSearchDomains": [],
-      "extraHosts": [],
-      "cpu": 1024,
-      "image": "918544260695.dkr.ecr.us-east-1.amazonaws.com/msg.proj:latest",
-      "name": "msg-proj-prod",
-      "dockerLabels": {},
-      "dnsServers": [],
-      "links": [],
       "ulimits": [],
-      "mountPoints": [],
-      "environment": [
+      "volumesFrom": [],
+      "dnsServers": [],
+      "name": "msg-proj-prod",
+      "portMappings": [
         {
-          "value": "prod",
-          "name": "NODE_ENV"
+          "containerPort": 80,
+          "protocol": "tcp",
+          "hostPort": 0
         }
-      ]
+      ],
+      "command": [],
+      "image": "918544260695.dkr.ecr.us-east-1.amazonaws.com/msg.proj:latest",
+      "entryPoint": []
     }
   ],
   "volumes": []

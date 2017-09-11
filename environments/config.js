@@ -12,5 +12,6 @@ let config = {
     port: process.env.PORT || defaultConfig.port,
     dynamodb: process.env.DDB || defaultConfig.dynamodb
 };
+console.log(config.dynamodb);
 
 module.exports = config;

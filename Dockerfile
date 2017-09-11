@@ -1,5 +1,7 @@
 FROM node:6
 
+ARG DDBTable
+
 RUN npm install --production
 
 RUN mkdir -p /data/app/msgproj
