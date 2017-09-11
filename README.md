@@ -1,6 +1,17 @@
 # msgproj
 The msgproj allows user to post messages, retrieve messages, and delete messages.
 
+## Design & Architecture
+The Project is separated into 4 components:
+- #### Frontend: React hosted on S3 Webhosting.
+  The reason of separating frontend from service is because it is a client of the API. Logically it should be on a different layer. An advantage of using S3 webhosting is it's easy to deploy, and scaling is automatically handled.
+- #### API: Node.js on AWS ECS cluster.
+  Node.js is fast, cost less hardware ($$$). ECS has very good supports on docker.
+- #### Docker Repo: ECR
+  ECR is AWS native Docker repo, automatically compatable with ECS.
+- #### DataStore: AWS hosted DynamoDB
+  DynamoBD has autoscaling on read/write capacity. It's NoSQL, search is fast. Key-pair structure fits the requirement well.
+
 ## How To Run:
 Before start, we need to get AWS authentication.
 - Get aws authenication by `aws configure`.
