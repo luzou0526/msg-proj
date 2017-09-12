@@ -15,7 +15,14 @@ The Project is separated into 4 components:
 ![Alt text](./diagrams/msgproj.png?raw=true "Architecture Graph")
 
 ## User Interaction Sequence Diagrams
+Post/Create Message
 ![Alt text](./diagrams/CreateUserInteraction.png?raw=true "Post Message Sequence")
+
+Get Message
+![Alt text](./diagrams/GetUserInteraction.png?raw=true "Get Message Sequence")
+
+Delete Message
+![Alt text](./diagrams/DeleteUserInteraction.png?raw=true "Delete Message Sequence")
 
 ## How To Run:
 Before start, we need to get AWS authentication.
