@@ -14,6 +14,9 @@ The Project is separated into 4 components:
 
 ![Alt text](./msgproj.png?raw=true "Architecture Graph")
 
+## User Interaction Sequence Diagrams
+![Alt text](./CreateUserInteraction.png?raw=true "Post Message Sequence")
+
 ## How To Run:
 Before start, we need to get AWS authentication.
 - Get aws authenication by `aws configure`.
