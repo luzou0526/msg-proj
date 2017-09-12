@@ -6,5 +6,5 @@
 
 module.exports = {
     port: 80,
-    dynamodb: "msgprodddb-DDBTable-1GMJ3AMOUN92G"
+    dynamodb: "msgprojddb-DDBTable-18HA57RJ7M1OZ"
 };
