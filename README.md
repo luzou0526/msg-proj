@@ -12,10 +12,10 @@ The Project is separated into 4 components:
 - #### DataStore: AWS hosted DynamoDB
   DynamoBD has autoscaling on read/write capacity. It's NoSQL, search is fast. Key-pair structure fits the requirement well.
 
-![Alt text](./msgproj.png?raw=true "Architecture Graph")
+![Alt text](./diagrams/msgproj.png?raw=true "Architecture Graph")
 
 ## User Interaction Sequence Diagrams
-![Alt text](./CreateUserInteraction.png?raw=true "Post Message Sequence")
+![Alt text](./diagrams/CreateUserInteraction.png?raw=true "Post Message Sequence")
 
 ## How To Run:
 Before start, we need to get AWS authentication.
